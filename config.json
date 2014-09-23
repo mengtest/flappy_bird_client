@@ -2,8 +2,8 @@
   "init_cfg": {
     "isLandscape": false,
     "name": "FlappyBird",
-    "width": 960,
-    "height": 640,
+    "width": 512,
+    "height": 288,
     "entry": "src/main.lua",
     "consolePort": 6010,
     "debugPort": 0

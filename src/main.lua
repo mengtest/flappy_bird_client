@@ -145,15 +145,19 @@ local function main()
 
         return layerMenu
     end
-
+    
     -- play background music, preload effect
     local bgMusicPath = cc.FileUtils:getInstance():fullPathForFilename("background.mp3") 
     cc.SimpleAudioEngine:getInstance():playMusic(bgMusicPath, true)
     local effectPath = cc.FileUtils:getInstance():fullPathForFilename("effect1.wav")
     cc.SimpleAudioEngine:getInstance():preloadEffect(effectPath)
-
+    
     -- run
-    local sceneGame = cc.Scene:create()local sceneGame = cc.Scene:create()
+    local sceneGame = cc.Scene:createWithPhysics()
+    sceneGame:getPhysicsWorld():setDebugDrawMask(cc.PhysicsWorld.DEBUGDRAW_ALL)
+    sceneGame:getPhysicsWorld():setGravity(cc.p(0, gravity))    --gravity is defined in bird.lua
+
+    
     sceneGame:addChild(createGameLayer())
     sceneGame:addChild(createLayerMenu())
 	
