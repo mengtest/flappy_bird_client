@@ -89,6 +89,7 @@ local function main()
         birdTouchHandler(gameLayer, spriteBird)
         
         -- add moving pipes
+        score = 0   --分数，飞过一个管子得到一分
         local pipes = createPipes(gameLayer)
         
         -- add moving land

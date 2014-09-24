@@ -10,8 +10,11 @@ local waitDistance = 100
 -- vars
 local PIPE_NEW = 0
 local PIPE_PASS = 1
-local pipes = {}
-local pipeState = {}
+local pipes = {}    --contains nodes of pipes
+local pipeState = {}    --PIPE_NEW or PIPE_PASS
+--local pipeXPosition = {}    --the x position of pipes
+local downPipeYPosition = {}    --朝下pipe的最下侧的y坐标
+local upPipeYPosition = {}  --朝上pipe的最上侧的y坐标
 
 function createPipes(layer)
     local function initPipe()
@@ -25,11 +28,13 @@ function createPipes(layer)
             singlePipe:addChild(downPipe)
             singlePipe:addChild(upPipe)
             --管道高度？
-            singlePipe:setPosition(origin.x + visibleSize.width + (i-1)*pipeInterval + waitDistance, math.random(0,3) * 50)
+            local height_random = math.random(0,3)
+            singlePipe:setPosition(origin.x + visibleSize.width + (i-1)*pipeInterval + waitDistance, height_random * 50)
             layer:addChild(singlePipe, 10)
-
             pipes[i] = singlePipe
-            pipeState[i] = PIPE_PASS            
+            pipeState[i] = PIPE_NEW
+            upPipeYPosition[i] = height_random*50 + pipeHeight/2
+            downPipeYPosition[i] = height_random*50 + pipeHeight/2 + pipeDistance
         end
 
     end
@@ -50,9 +55,20 @@ function createPipes(layer)
             end
         end
     end
-
-    initPipe()
-    createPipeFunc = cc.Director:getInstance():getScheduler():scheduleScriptFunc(movePipe, 0, false)
     
+    local function calScore()
+        local birdXPosition = spriteBird:getPositionX()
+        for i = 1, pipeCount do
+            if pipeState[i] == PIPE_NEW and pipes[i]:getPositionX() < birdXPosition then
+                pipeState[i] = PIPE_PASS
+                score = score + 1
+                print("score is "..score)
+            end
+        end
+    end
+    
+    initPipe()
+    movePipeFunc = cc.Director:getInstance():getScheduler():scheduleScriptFunc(movePipe, 0, false)
+    calScoreFunc = cc.Director:getInstance():getScheduler():scheduleScriptFunc(calScore, 0, false)
     return pipes
 end
