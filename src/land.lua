@@ -1,5 +1,5 @@
 function createLand()
-    landHeight = atlas["land"].height/2
+    local landHeight = atlas["land"].height/2
     
     -- first moving land
     local land_1 = createAtlasSprite("land")

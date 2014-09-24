@@ -4,6 +4,7 @@ require "src/atlas"
 require "src/bird"
 require "src/pipe"
 require "src/land"
+require "src/collision"
 
 -- cclog
 cclog = function(...)
@@ -60,7 +61,7 @@ local function main()
     --]]
 
     ---------------
-
+    --get resolution and coordinate
     visibleSize = cc.Director:getInstance():getVisibleSize()
     print(visibleSize.height)
     print(visibleSize.width)
@@ -72,28 +73,33 @@ local function main()
     
     -------------------------------------
     -------------------------------------    
-    -- create farm
+    -- create gameLayer
     local function createGameLayer()
         local gameLayer = cc.Layer:create()
         
         -- add in farm background
-        --local bg = cc.Sprite:create("farm.jpg")
         local bg = createAtlasSprite("bg_day")
         bg:setPosition(origin.x + visibleSize.width / 2, origin.y + visibleSize.height / 2)
         gameLayer:addChild(bg, 0)
+        
         -- add moving bird
         spriteBird = creatBird()
         gameLayer:addChild(spriteBird, 20)
         -- handling bird touch events
         birdTouchHandler(gameLayer, spriteBird)
+        
         -- add moving pipes
-        createPipes(gameLayer)
+        local pipes = createPipes(gameLayer)
+        
         -- add moving land
         local land_1, land_2 = createLand()
         gameLayer:addChild(land_1, 10)
         gameLayer:addChild(land_2, 10)
-
-        -- 
+        
+        -- add collision detect
+        addCollision(gameLayer, spriteBird, pipes, land_1, land_2)
+        
+        -- handler the exit event
         local function onNodeEvent(event)
            if "exit" == event then
                cc.Director:getInstance():getScheduler():unscheduleScriptEntry(schedulerID)
@@ -106,8 +112,8 @@ local function main()
 
 
     -- create menu
-    local function createLayerMenu()
-        local layerMenu = cc.Layer:create()
+    local function createMenuLayer()
+        local menuLayer = cc.Layer:create()
 
         local menuPopup, menuTools, effectID
 
@@ -131,7 +137,7 @@ local function main()
         menuPopup = cc.Menu:create(menuPopupItem)
         menuPopup:setPosition(origin.x + visibleSize.width / 2, origin.y + visibleSize.height / 2)
         menuPopup:setVisible(false)
-        layerMenu:addChild(menuPopup)
+        menuLayer:addChild(menuPopup)
         
         -- add the left-bottom "tools" menu to invoke menuPopup
         local menuToolsItem = cc.MenuItemImage:create("menu1.png", "menu1.png")
@@ -141,9 +147,9 @@ local function main()
         local itemWidth = menuToolsItem:getContentSize().width
         local itemHeight = menuToolsItem:getContentSize().height
         menuTools:setPosition(origin.x + itemWidth/2, origin.y + itemHeight/2)
-        layerMenu:addChild(menuTools)
+        menuLayer:addChild(menuTools)
 
-        return layerMenu
+        return menuLayer
     end
     
     -- play background music, preload effect
@@ -159,7 +165,7 @@ local function main()
 
     
     sceneGame:addChild(createGameLayer())
-    sceneGame:addChild(createLayerMenu())
+    sceneGame:addChild(createMenuLayer())
 	
 	if cc.Director:getInstance():getRunningScene() then
 		cc.Director:getInstance():replaceScene(sceneGame)

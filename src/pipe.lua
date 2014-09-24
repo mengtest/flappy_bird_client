@@ -53,4 +53,6 @@ function createPipes(layer)
 
     initPipe()
     createPipeFunc = cc.Director:getInstance():getScheduler():scheduleScriptFunc(movePipe, 0, false)
+    
+    return pipes
 end
