@@ -2,12 +2,15 @@
 gravity = -550   --重力大小
 upSpeed = 250    --点击后上升的高度
 
+-- vars
+local spriteBird = nil
+
 -- create the moving bird
 function creatBird() 
     --create bird animate
     math.randomseed(tostring(os.time()):reverse():sub(1, 6))  --修改随机数种子
     local birdNum = math.random(0,2)
-    local spriteBird = createAtlasSprite("bird"..birdNum.."_1")
+    spriteBird = createAtlasSprite("bird"..birdNum.."_1")
     spriteBird:setPosition(origin.x + visibleSize.width/2, origin.y + visibleSize.height/2)
     local animation = cc.Animation:createWithSpriteFrames({createAtlasFrame("bird"..birdNum.."_0"), createAtlasFrame("bird"..birdNum.."_1"), createAtlasFrame("bird"..birdNum.."_2")},0.1)
     local animate = cc.Animate:create(animation)
@@ -16,7 +19,6 @@ function creatBird()
     --create physicsBody
     spriteBird:setPhysicsBody(cc.PhysicsBody:createCircle(spriteBird:getContentSize().width/2 - 9))    --修正physicalBody的大小
     spriteBird:getPhysicsBody():setEnable(true)
-    
     --[[
     -- moving bird at every frame
     local function tick()
@@ -32,13 +34,15 @@ function creatBird()
     return spriteBird
 end
 
+local listener = nil --监听touch事件，birdTouchHandler()和removeBirdTouchHandler()中会用到
+
 -- handling touch events
-function birdTouchHandler(gameLayer, spriteBird)
+function birdTouchHandler(gameLayer)
     --local touchBeginPoint = nil
     local function onTouchBegan(touch, event)
-        local location = touch:getLocation()
-        cclog("onTouchBegan: %0.2f, %0.2f", location.x, location.y)
-        touchBeginPoint = {x = location.x, y = location.y}
+        --local location = touch:getLocation()
+        --cclog("onTouchBegan: %0.2f, %0.2f", location.x, location.y)
+        --touchBeginPoint = {x = location.x, y = location.y}
         -- CCTOUCHBEGAN event must return true
         spriteBird:getPhysicsBody():setVelocity(cc.p(0, upSpeed))
         return true
@@ -64,10 +68,20 @@ function birdTouchHandler(gameLayer, spriteBird)
     --]]
     
     -- 事件监听的方式
-    local listener = cc.EventListenerTouchOneByOne:create()
+    listener = cc.EventListenerTouchOneByOne:create()
     listener:registerScriptHandler(onTouchBegan,cc.Handler.EVENT_TOUCH_BEGAN )
     --listener:registerScriptHandler(onTouchMoved,cc.Handler.EVENT_TOUCH_MOVED )
     --listener:registerScriptHandler(onTouchEnded,cc.Handler.EVENT_TOUCH_ENDED )
     local eventDispatcher = gameLayer:getEventDispatcher()
     eventDispatcher:addEventListenerWithSceneGraphPriority(listener, gameLayer)
-end 
+end
+
+-- remove touch events
+function removeBirdTouchHandler(gameLayer)
+    gameLayer:getEventDispatcher():removeEventListener(listener)
+end
+
+-- get spriteBird
+function getSpriteBird()
+    return spriteBird
+end

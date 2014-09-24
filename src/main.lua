@@ -83,10 +83,10 @@ local function main()
         gameLayer:addChild(bg, 0)
         
         -- add moving bird
-        spriteBird = creatBird()
+        local spriteBird = creatBird()
         gameLayer:addChild(spriteBird, 20)
         -- handling bird touch events
-        birdTouchHandler(gameLayer, spriteBird)
+        birdTouchHandler(gameLayer)
         
         -- add moving pipes
         score = 0   --分数，飞过一个管子得到一分
