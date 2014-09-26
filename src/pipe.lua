@@ -8,7 +8,7 @@ local pipeWidth = 52
 local pipeDistance = 100    --上下管道间的距离
 local pipeInterval = 180    --两根管道的水平距离
 local waitDistance = 100    --开始时第一根管道距离屏幕最右侧的距离
-local heightOffset = 30 --singlePipe:setPosition(XXX, height_random * heightOffset)
+local heightOffset = 25 --singlePipe:setPosition(XXX, height_random * heightOffset)
 -- vars
 local PIPE_NEW = 0
 local PIPE_PASS = 1
@@ -20,7 +20,7 @@ local upPipeYPosition = {}  --朝上pipe的最上侧的y坐标
 local movePipeFunc = nil
 local calScoreFunc = nil
 
-function createPipes(layer)
+function createPipes(layer, isNetBattle)
     local function initPipe()
         for i = 1, pipeCount do
             --把downPipe和upPipe组合为singlePipe
@@ -76,6 +76,8 @@ function createPipes(layer)
                 local next = i-1
                 if next < 1 then next = pipeCount end
                 pipeNode:setPosition(pipes[next]:getPositionX() + pipeInterval, heightOffset * randomHeight)
+                upPipeYPosition[i] = randomHeight*heightOffset + pipeHeight/2
+                downPipeYPosition[i] = randomHeight*heightOffset + pipeHeight/2 + pipeDistance
                 --pipeNode:setTag(randomHeight)
                 break
             end
@@ -104,4 +106,16 @@ function removeMovePipeFunc()
 end
 function removeCalScoreFunc()
     cc.Director:getInstance():getScheduler():unscheduleScriptEntry(calScoreFunc)
+end
+function getPipes()
+    return pipes
+end
+function getUpPipeYPosition()
+    return upPipeYPosition
+end
+function getPipeCount()
+    return pipeCount
+end
+function getPipeWidth()
+    return pipeWidth
 end

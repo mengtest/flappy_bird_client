@@ -26,10 +26,10 @@ function addCollision(gameLayer, spriteBird, pipes, land_1, land_2)
         --注：categoryBitmask 1=land  3=bird  7=pipe
         --注：pipe和其他物体不会碰撞，会发送事件（bitmask设置生效）
         --注：land和bird不会碰撞，会发送事件（bitmask设置失效。。所以只能spriteBird:getPhysicsBody():setEnable(false)）
-        cclog("onContactBegin")
         local a = contact:getShapeA():getBody():getCategoryBitmask();
         local b = contact:getShapeB():getBody():getCategoryBitmask();
         if a == 3 and b == 1 or a == 1 and b == 3 then
+            cclog("onContactBetweenBirdAndLandBegin")
             --bird collides with land
             spriteBird:getPhysicsBody():setEnable(false)
             spriteBird:stopAllActions()
@@ -37,11 +37,16 @@ function addCollision(gameLayer, spriteBird, pipes, land_1, land_2)
             land_2:stopAllActions()
             removeMovePipeFunc()
             removeBirdTouchHandler(gameLayer)
+            removeAIFunc()
         elseif a == 3 and b == 7 or a == 7 and b == 3 then
+            cclog("onContactBetweenBirdAndPipeBegin")
+            --bird collides with pipe
+            print("here")
             land_1:stopAllActions()
             land_2:stopAllActions()
             removeMovePipeFunc()
             removeBirdTouchHandler(gameLayer)
+            removeAIFunc()
         end
         
         

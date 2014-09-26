@@ -5,6 +5,7 @@ require "src/bird"
 require "src/pipe"
 require "src/land"
 require "src/collision"
+require "src/network"
 
 -- cclog
 cclog = function(...)
@@ -70,48 +71,8 @@ local function main()
     print(origin.y)
 
     ---------------
-    
-    -------------------------------------
-    -------------------------------------    
-    -- create gameLayer
-    local function createGameLayer()
-        local gameLayer = cc.Layer:create()
-        
-        -- add in farm background
-        local bg = createAtlasSprite("bg_day")
-        bg:setPosition(origin.x + visibleSize.width / 2, origin.y + visibleSize.height / 2)
-        gameLayer:addChild(bg, 0)
-        
-        -- add moving bird
-        local spriteBird = creatBird()
-        gameLayer:addChild(spriteBird, 20)
-        -- handling bird touch events
-        birdTouchHandler(gameLayer)
-        
-        -- add moving pipes
-        score = 0   --分数，飞过一个管子得到一分
-        local pipes = createPipes(gameLayer)
-        
-        -- add moving land
-        local land_1, land_2 = createLand()
-        gameLayer:addChild(land_1, 10)
-        gameLayer:addChild(land_2, 10)
-        
-        -- add collision detect
-        addCollision(gameLayer, spriteBird, pipes, land_1, land_2)
-        
-        -- handler the exit event
-        local function onNodeEvent(event)
-           if "exit" == event then
-               cc.Director:getInstance():getScheduler():unscheduleScriptEntry(schedulerID)
-           end
-        end
-        gameLayer:registerScriptHandler(onNodeEvent)
 
-        return gameLayer
-    end
-
-
+    --[[
     -- create menu
     local function createMenuLayer()
         local menuLayer = cc.Layer:create()
@@ -130,7 +91,7 @@ local function main()
             effectID = cc.SimpleAudioEngine:getInstance():playEffect(effectPath)
             menuPopup:setVisible(true)
         end
-
+        
         -- add a popup menu
         local menuPopupItem = cc.MenuItemImage:create("menu2.png", "menu2.png")
         menuPopupItem:setPosition(0, 0)
@@ -152,30 +113,71 @@ local function main()
 
         return menuLayer
     end
+    ]]
     
+    --[[
     -- play background music, preload effect
     local bgMusicPath = cc.FileUtils:getInstance():fullPathForFilename("background.mp3") 
     cc.SimpleAudioEngine:getInstance():playMusic(bgMusicPath, true)
     local effectPath = cc.FileUtils:getInstance():fullPathForFilename("effect1.wav")
     cc.SimpleAudioEngine:getInstance():preloadEffect(effectPath)
+    ]]
     
     -- run
-    local sceneGame = cc.Scene:createWithPhysics()
-    sceneGame:getPhysicsWorld():setDebugDrawMask(cc.PhysicsWorld.DEBUGDRAW_ALL)
-    sceneGame:getPhysicsWorld():setGravity(cc.p(0, gravity))    --gravity is defined in bird.lua
-
+    local gameScene = cc.Scene:createWithPhysics()
+    -- create physicsWorld
+    gameScene:getPhysicsWorld():setDebugDrawMask(cc.PhysicsWorld.DEBUGDRAW_ALL)
+    gameScene:getPhysicsWorld():setGravity(cc.p(0, gravity))    --gravity is defined in bird.lua
     
-    sceneGame:addChild(createGameLayer())
-    sceneGame:addChild(createMenuLayer())
+    local isNetBattle = false
+    gameScene:addChild(createGameLayer(isNetBattle))
 	
 	if cc.Director:getInstance():getRunningScene() then
-		cc.Director:getInstance():replaceScene(sceneGame)
+		cc.Director:getInstance():replaceScene(gameScene)
 	else
-		cc.Director:getInstance():runWithScene(sceneGame)
+		cc.Director:getInstance():runWithScene(gameScene)
 	end
 
 end
 
+function createGameLayer(isNetBattle)
+    local gameLayer = cc.Layer:create()
+
+    -- add in farm background
+    local bg = createAtlasSprite("bg_day")
+    bg:setPosition(origin.x + visibleSize.width / 2, origin.y + visibleSize.height / 2)
+    gameLayer:addChild(bg, 0)
+
+    -- add moving bird
+    local spriteBird = creatBird()
+    gameLayer:addChild(spriteBird, 20)
+    -- handling bird touch events
+    birdTouchHandler(gameLayer)
+    -- handling bird AI
+    birdAIHandler(gameLayer)
+
+    -- add moving pipes
+    score = 0   --分数，飞过一个管子得到一分
+    local pipes = createPipes(gameLayer, isNetBattle)
+
+    -- add moving land
+    local land_1, land_2 = createLand()
+    gameLayer:addChild(land_1, 10)
+    gameLayer:addChild(land_2, 10)
+
+    -- add collision detect
+    addCollision(gameLayer, spriteBird, pipes, land_1, land_2)
+
+    -- handler the exit event
+    local function onNodeEvent(event)
+        if "exit" == event then
+            --cc.Director:getInstance():getScheduler():unscheduleScriptEntry(schedulerID)
+        end
+    end
+    gameLayer:registerScriptHandler(onNodeEvent)
+
+    return gameLayer
+end
 
 local status, msg = xpcall(main, __G__TRACKBACK__)
 if not status then
