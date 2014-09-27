@@ -123,6 +123,8 @@ local function main()
     cc.SimpleAudioEngine:getInstance():preloadEffect(effectPath)
     ]]
     
+    connect()
+    --[[
     -- run
     local gameScene = cc.Scene:createWithPhysics()
     -- create physicsWorld
@@ -137,7 +139,7 @@ local function main()
 	else
 		cc.Director:getInstance():runWithScene(gameScene)
 	end
-
+	]]
 end
 
 function createGameLayer(isNetBattle)

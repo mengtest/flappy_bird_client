@@ -41,7 +41,6 @@ function addCollision(gameLayer, spriteBird, pipes, land_1, land_2)
         elseif a == 3 and b == 7 or a == 7 and b == 3 then
             cclog("onContactBetweenBirdAndPipeBegin")
             --bird collides with pipe
-            print("here")
             land_1:stopAllActions()
             land_2:stopAllActions()
             removeMovePipeFunc()
