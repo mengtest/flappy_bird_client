@@ -36,6 +36,7 @@ function connect()
         if data['pos'] ~= nil then
             -- 如果网战结束，则不需要更新其他鸟位置
             if not isNetBattleOver then
+                otherBird[data['no']]:setPositionY(data['pos'])
                 otherBird[data['no']]:getPhysicsBody():setVelocity(cc.p(0, upSpeed))
             end
         end
