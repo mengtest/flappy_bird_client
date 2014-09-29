@@ -1,5 +1,5 @@
 -- constants
-gravity = -600   --重力大小
+gravity = -800   --重力大小
 upSpeed = 250    --点击后上升的高度
 
 -- vars
@@ -32,6 +32,7 @@ function birdTouchHandler(gameLayer)
         --local location = touch:getLocation()
         --cclog("onTouchBegan: %0.2f, %0.2f", location.x, location.y)
         spriteBird:getPhysicsBody():setVelocity(cc.p(0, upSpeed))
+        if isNetBattle then notifyPosition(spriteBird:getPositionY()) end
         return true
     end
     --[[
@@ -56,9 +57,8 @@ function birdTouchHandler(gameLayer)
     
     -- 事件监听的方式
     listener = cc.EventListenerTouchOneByOne:create()
+    listener:setSwallowTouches(true)
     listener:registerScriptHandler(onTouchBegan,cc.Handler.EVENT_TOUCH_BEGAN )
-    --listener:registerScriptHandler(onTouchMoved,cc.Handler.EVENT_TOUCH_MOVED )
-    --listener:registerScriptHandler(onTouchEnded,cc.Handler.EVENT_TOUCH_ENDED )
     local eventDispatcher = gameLayer:getEventDispatcher()
     eventDispatcher:addEventListenerWithSceneGraphPriority(listener, gameLayer)
 end
@@ -73,12 +73,15 @@ local function switchAI(switch, gameLayer)
         local pipes = getPipes()
         local upPipeY = getUpPipeYPosition()
         local pipeY = nil   --bird需要参考的管子的高度，优先是鸟当前所在的管子，其次是鸟面前的第一根管子
+        -- 取定bird需要参考的管子
+        -- 首先判断bird是不是在管子中
         for index = 1, getPipeCount() do
             if birdX+(spriteBird:getContentSize().width/2-9) >= pipes[index]:getPositionX() - getPipeWidth()/2 and birdX-(spriteBird:getContentSize().width/2-9) <= pipes[index]:getPositionX() + getPipeWidth()/2 then
                 pipeY = upPipeY[index]
                 break
             end
         end
+        -- 其次判断bird是不是在两根管子之间
         if pipeY == nil then
             for index = 1, getPipeCount() do
                 local preIndex = index - 1
@@ -89,9 +92,20 @@ local function switchAI(switch, gameLayer)
                 end
             end
         end
-        if pipeY == nil then pipeY = upPipeY[1] end    --如果没有满足要求的pipe，则说明所有pipe都在鸟的前面，取第一根pipe
+        -- 如果没有满足要求的pipe，则说明所有管子都在bird之前，此时bird前方第一根管子是第一根管子或者最后一根管子
+        if pipeY == nil then
+            if pipes[1]:getPositionX() < pipes[getPipeCount()]:getPositionX() then
+                pipeY = upPipeY[1]
+            else
+                pipeY = upPipeY[getPipeCount()]
+            end
+        end
+        -- 根据和管子的高度关系决定bird是否要向上跳
         if birdY-(spriteBird:getContentSize().width/2-9)-6 < pipeY then --鸟的physicsBody的半径是spriteBird:getContentSize().width/2 - 9
             spriteBird:getPhysicsBody():setVelocity(cc.p(0, upSpeed))
+            if isNetBattle then
+                notifyPosition(spriteBird:getPositionY())
+            end
         end
     end
     
@@ -150,5 +164,7 @@ function getSpriteBird()
 end
 
 function removeAIFunc()
-    cc.Director:getInstance():getScheduler():unscheduleScriptEntry(AIFunc)
+    if AIFunc ~= nil then
+        cc.Director:getInstance():getScheduler():unscheduleScriptEntry(AIFunc)
+    end
 end 

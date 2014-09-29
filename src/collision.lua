@@ -22,7 +22,7 @@ function addCollision(gameLayer, spriteBird, pipes, land_1, land_2)
     --pipe对应的刚体在pipe.lua中设置
     
     --contactHandler
-    local function onContactBetweenBirdAndLandBegin(contact)
+    local function onContactBegin(contact)
         --注：categoryBitmask 1=land  3=bird  7=pipe
         --注：pipe和其他物体不会碰撞，会发送事件（bitmask设置生效）
         --注：land和bird不会碰撞，会发送事件（bitmask设置失效。。所以只能spriteBird:getPhysicsBody():setEnable(false)）
@@ -46,6 +46,8 @@ function addCollision(gameLayer, spriteBird, pipes, land_1, land_2)
             removeMovePipeFunc()
             removeBirdTouchHandler(gameLayer)
             removeAIFunc()
+            -- 如果是网战则设置网战结束
+            if isNetBattle then isNetBattleOver = true end
         end
         
         
@@ -55,7 +57,6 @@ function addCollision(gameLayer, spriteBird, pipes, land_1, land_2)
     
     --add contactListener
     local contactListener = cc.EventListenerPhysicsContact:create()
-    --local contactListener = cc.EventListenerPhysicsContactWithBodies:create(landNode:getPhysicsBody(), spriteBird:getPhysicsBody())
-    contactListener:registerScriptHandler(onContactBetweenBirdAndLandBegin, cc.Handler.EVENT_PHYSICS_CONTACT_BEGIN)
+    contactListener:registerScriptHandler(onContactBegin, cc.Handler.EVENT_PHYSICS_CONTACT_BEGIN)
     gameLayer:getEventDispatcher():addEventListenerWithSceneGraphPriority(contactListener, gameLayer)
 end

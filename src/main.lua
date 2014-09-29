@@ -5,7 +5,8 @@ require "src/bird"
 require "src/pipe"
 require "src/land"
 require "src/collision"
-require "src/network"
+require "src/network.network"
+require "src/gameController"
 
 -- cclog
 cclog = function(...)
@@ -51,7 +52,7 @@ local function main()
     if (cc.PLATFORM_OS_IPHONE == targetPlatform) or (cc.PLATFORM_OS_IPAD == targetPlatform) or 
        (cc.PLATFORM_OS_ANDROID == targetPlatform) or (cc.PLATFORM_OS_WINDOWS == targetPlatform) or
        (cc.PLATFORM_OS_MAC == targetPlatform) then
-        cclog("result is ")
+        --cclog("result is ")
 		--require('debugger')()
         
     end
@@ -64,11 +65,7 @@ local function main()
     ---------------
     --get resolution and coordinate
     visibleSize = cc.Director:getInstance():getVisibleSize()
-    print(visibleSize.height)
-    print(visibleSize.width)
     origin = cc.Director:getInstance():getVisibleOrigin()
-    print(origin.x)
-    print(origin.y)
 
     ---------------
 
@@ -122,63 +119,22 @@ local function main()
     local effectPath = cc.FileUtils:getInstance():fullPathForFilename("effect1.wav")
     cc.SimpleAudioEngine:getInstance():preloadEffect(effectPath)
     ]]
-    
-    connect()
-    --[[
+
     -- run
     local gameScene = cc.Scene:createWithPhysics()
     -- create physicsWorld
     gameScene:getPhysicsWorld():setDebugDrawMask(cc.PhysicsWorld.DEBUGDRAW_ALL)
     gameScene:getPhysicsWorld():setGravity(cc.p(0, gravity))    --gravity is defined in bird.lua
-    
-    local isNetBattle = false
-    gameScene:addChild(createGameLayer(isNetBattle))
+    -- connect server if needed
+    if (isNetBattle) then connect() end
+    -- gameStart() in gameController
+    gameStart(gameScene)
 	
 	if cc.Director:getInstance():getRunningScene() then
 		cc.Director:getInstance():replaceScene(gameScene)
 	else
 		cc.Director:getInstance():runWithScene(gameScene)
 	end
-	]]
-end
-
-function createGameLayer(isNetBattle)
-    local gameLayer = cc.Layer:create()
-
-    -- add in farm background
-    local bg = createAtlasSprite("bg_day")
-    bg:setPosition(origin.x + visibleSize.width / 2, origin.y + visibleSize.height / 2)
-    gameLayer:addChild(bg, 0)
-
-    -- add moving bird
-    local spriteBird = creatBird()
-    gameLayer:addChild(spriteBird, 20)
-    -- handling bird touch events
-    birdTouchHandler(gameLayer)
-    -- handling bird AI
-    birdAIHandler(gameLayer)
-
-    -- add moving pipes
-    score = 0   --分数，飞过一个管子得到一分
-    local pipes = createPipes(gameLayer, isNetBattle)
-
-    -- add moving land
-    local land_1, land_2 = createLand()
-    gameLayer:addChild(land_1, 10)
-    gameLayer:addChild(land_2, 10)
-
-    -- add collision detect
-    addCollision(gameLayer, spriteBird, pipes, land_1, land_2)
-
-    -- handler the exit event
-    local function onNodeEvent(event)
-        if "exit" == event then
-            --cc.Director:getInstance():getScheduler():unscheduleScriptEntry(schedulerID)
-        end
-    end
-    gameLayer:registerScriptHandler(onNodeEvent)
-
-    return gameLayer
 end
 
 local status, msg = xpcall(main, __G__TRACKBACK__)
